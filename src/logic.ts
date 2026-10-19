@@ -25,6 +25,7 @@ export interface State {
   alerts: Alert[];
   alerted: string[];
   currentId: string | null;
+  filler?: { vid: string; title: string } | null; // música de fondo cuando nadie canta
   lastTable: number | null;
   settings: Settings;
   seq: number;
@@ -76,7 +77,7 @@ export function closeNight(s: State) { wipe(s); s.night = null; }
 function wipe(s: State) {
   s.tables = makeTables(s.settings.tableCount);
   s.rotation = []; s.users = []; s.songs = []; s.votes = {}; s.alerts = []; s.alerted = [];
-  s.currentId = null; s.lastTable = null;
+  s.currentId = null; s.lastTable = null; s.filler = null;
 }
 export function rotateCode(s: State, code: string) {
   if (!s.night) throw new UserError('Primero abre la noche.');
@@ -221,6 +222,7 @@ export function start(s: State, now: number): Song {
   if (!q.length) throw new UserError('La cola está vacía.');
   const n = q[0].song;
   n.status = 'singing'; n.startedAt = now;
+  s.filler = null;
   s.currentId = n.id;
   if (!n.priority) s.lastTable = n.table;
   return n;
@@ -235,6 +237,21 @@ export function skipNext(s: State, now: number): Song {
   n.status = 'skipped'; n.endedAt = now;
   if (!n.priority) s.lastTable = n.table;
   return n;
+}
+
+// Música de fondo: el admin pone un video mientras nadie canta; el QR y el código siguen en pantalla.
+export function setFiller(s: State, url: unknown) {
+  if (!s.night) throw new UserError('Primero abre la noche.');
+  if (s.currentId) throw new UserError('Alguien está cantando. Espera a que termine.');
+  const vid = ytId(clean(url, LIMITS.url));
+  if (!vid) throw new UserError('Ese enlace no es de un video de YouTube.');
+  s.filler = { vid, title: '' };
+}
+export function clearFiller(s: State, vid?: string) {
+  if (!s.filler) return false;
+  if (vid && s.filler.vid !== vid) return false;
+  s.filler = null;
+  return true;
 }
 
 // ---------- Votos ----------
@@ -323,14 +340,14 @@ export function tvView(s: State) {
   const b = base(s);
   const q = queue(s);
   const cur = s.currentId ? SG(s, s.currentId) : undefined;
-  return { ...b, next: q[0] ? pub(s, q[0].song) : null, code: s.night?.code ?? null, currentVideo: cur ? ytId(cur.url) : null };
+  return { ...b, next: q[0] ? pub(s, q[0].song) : null, code: s.night?.code ?? null, currentVideo: cur ? ytId(cur.url) : null, filler: !cur && s.filler ? s.filler : null };
 }
 export function adminView(s: State) {
   const q = queue(s);
   const cur = s.currentId ? SG(s, s.currentId) : undefined;
   const full = (x: Song, round?: number) => ({ ...pub(s, x, round), url: x.url, videoError: !!x.videoError, createdAt: x.createdAt, status: x.status, stats: stats(s, x.id) });
   return {
-    open: !!s.night, code: s.night?.code ?? null, settings: s.settings,
+    open: !!s.night, code: s.night?.code ?? null, settings: s.settings, filler: s.filler ?? null,
     current: cur ? full(cur) : null,
     queue: q.map(i => full(i.song, i.round)),
     tables: s.tables.map(t => ({ n: t.n, active: t.active, people: s.users.filter(u => u.table === t.n && !u.gone).map(u => u.name), pos: s.rotation.filter(n => T(s, n)?.active).indexOf(t.n) })),

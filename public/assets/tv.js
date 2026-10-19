@@ -47,7 +47,8 @@ function makePlayer() {
       onReady: () => { playerReady = true; render(); },
       onStateChange: e => {
         const map = { [YT.PlayerState.PLAYING]: 'playing', [YT.PlayerState.PAUSED]: 'paused', [YT.PlayerState.BUFFERING]: 'buffering', [YT.PlayerState.ENDED]: 'ended' };
-        if (map[e.data] && V?.current) conn.send('player_state', { state: map[e.data], id: V.current.id }).catch(() => {});
+        if (map[e.data] && (V?.current || V?.filler)) conn.send('player_state', { state: map[e.data], id: V.current ? V.current.id : 'filler' }).catch(() => {});
+        if (e.data === YT.PlayerState.ENDED && !V?.current && V?.filler) conn.send('filler_ended', { vid: V.filler.vid }).catch(() => {});
         if (e.data === YT.PlayerState.ENDED && V?.current && reportedEnd !== V.current.id) {
           reportedEnd = V.current.id;
           conn.send('ended', { id: V.current.id }).catch(() => {});
@@ -76,13 +77,13 @@ function render() {
   const qr = code ? qrSVG(joinURL(code)) : '';
 
   if (cur) {
-    $('break').hidden = true;
+    $('break').hidden = true; $('break').className = '';
     if (shownFor !== cur.id) { shownFor = cur.id; introUntil = Date.now() + INTRO_MS; }
     $('lower').hidden = false;
     $('lower').innerHTML = `<div class="who">${esc(cur.name)}</div><div class="what">${esc(cur.title || 'Video de YouTube')}<small>Mesa ${cur.table}${cur.artist ? ' · ' + esc(cur.artist) : ''}</small></div>`;
     $('nextchip').innerHTML = nx ? `<span>Sigue</span><b>${esc(nx.name)}</b> · Mesa ${nx.table}` : '';
     $('mini').hidden = !code;
-    $('mini').innerHTML = code ? `<span class="qrbox">${qr}</span>Código ${esc(code)}` : '';
+    $('mini').innerHTML = code ? `<span class="qrbox">${qr}</span><span class="mcode">Código <b>${esc(code)}</b></span>` : '';
     overlays();
     if (V.currentVideo) {
       $('novideo').hidden = true;
@@ -91,14 +92,25 @@ function render() {
       stopVideo();
       showNoVideo('Sin video: el admin puede elegirlo desde el panel.');
     }
+  } else if (V.filler) {
+    shownFor = null;
+    $('novideo').hidden = true; $('lower').hidden = true; $('mini').hidden = true; $('nextchip').classList.remove('show');
+    if (playerReady && loadedId !== V.filler.vid) { loadedId = V.filler.vid; player.loadVideoById(V.filler.vid); }
+    $('break').hidden = false; $('break').className = 'over';
+    $('break').innerHTML = `<div class="fpanel">
+      ${code ? `<span class="qrbox">${qr}</span>` : ''}
+      <div class="t1">Pide tu canción</div>
+      ${code ? `<div class="codebig"><span>Código de hoy</span><b class="num">${esc(code)}</b></div>` : ''}
+      ${nx ? `<div class="nx"><span class="lbl">Sigue · Mesa ${nx.table}</span><div class="nm">${esc(nx.name)}</div></div>` : ''}</div>`;
   } else {
     stopVideo();
     shownFor = null;
+    $('break').className = '';
     $('novideo').hidden = true; $('lower').hidden = true; $('mini').hidden = true; $('nextchip').classList.remove('show');
     $('break').hidden = false;
     $('break').innerHTML = `${code ? `<span class="qrbox">${qr}</span>` : `<img class="logo" src="/assets/logo.jpg" alt="Signos" style="width:30vw;height:30vw">`}
       <div class="side"><div class="row" style="gap:1.6vw"><img class="logo" src="/assets/logo.jpg" alt="Signos Rock &amp; Band"><div class="t1">${V.open ? 'Pide tu canción' : 'Karaoke cerrado'}</div></div>
-      ${code ? `<div class="t2">Escanea con la cámara del celular<br>Código de hoy <b class="num">${esc(code)}</b></div>` : ''}
+      ${code ? `<div class="t2">Escanea con la cámara del celular</div><div class="codebig"><span>Código de hoy</span><b class="num">${esc(code)}</b></div>` : ''}
       ${nx ? `<div class="nx"><span class="lbl">Sigue · Mesa ${nx.table}</span><div class="nm">${esc(nx.name)}</div><div class="sg">${esc(nx.title || 'Video de YouTube')}</div></div>`
         : V.open ? '<div class="nx"><div class="sg muted">La cola está vacía. ¡Sé el primero!</div></div>' : ''}</div>`;
   }

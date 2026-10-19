@@ -159,6 +159,7 @@ export class Room extends DurableObject<Env> {
     } else if (att.role === 'tv') {
       switch (m.t) {
         case 'ended': changed = L.finish(s, false, now, String(m.id)); break;
+        case 'filler_ended': changed = L.clearFiller(s, String(m.vid)); break;
         case 'video_error': L.markVideoError(s, String(m.id)); break;
         case 'player_state': {
           const st = String(m.state);
@@ -181,6 +182,8 @@ export class Room extends DurableObject<Env> {
         case 'prio': L.prioritizeSong(s, String(m.id)); break;
         case 'reject': L.rejectSong(s, String(m.id)); break;
         case 'set_video': L.setVideo(s, String(m.id), m.url); fetchTitleFor = String(m.id); break;
+        case 'set_filler': L.setFiller(s, m.url); this.ctx.waitUntil(this.fillFillerTitle()); break;
+        case 'clear_filler': L.clearFiller(s); break;
         case 'add_song': { const song = L.adminAddSong(s, { table: m.table, name: m.name, artist: m.artist, title: m.title, url: m.url }, now); if (song.url && !song.title) fetchTitleFor = song.id; break; }
         case 'table_on': L.activateTable(s, Number(m.n)); break;
         case 'table_off': L.closeTable(s, Number(m.n)); break;
@@ -208,6 +211,17 @@ export class Room extends DurableObject<Env> {
     if (att?.role === 'tv') this.sendAdmins({ t: 'tv', online: this.ctx.getWebSockets('tv').some(w => w !== ws && w.readyState === 1) });
   }
   async webSocketError() { /* el cliente reconecta solo */ }
+
+  async fillFillerTitle() {
+    const f = this.s.filler;
+    if (!f) return;
+    try {
+      const r = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent('https://www.youtube.com/watch?v=' + f.vid)}`, { signal: AbortSignal.timeout(4000) });
+      if (!r.ok) return;
+      const d = await r.json<{ title?: string }>();
+      if (this.s.filler?.vid === f.vid && d.title) { this.s.filler.title = String(d.title).slice(0, L.LIMITS.title); await this.save(); this.broadcast(); }
+    } catch { /* sin título */ }
+  }
 
   // Título del video vía oEmbed público de YouTube (sin clave).
   async fillTitle(songId: string) {

@@ -32,3 +32,19 @@ body.tv.cursor{cursor:default}
 #nextchip span{font-family:var(--f-display);color:var(--y);text-transform:uppercase;margin-right:.6vw}
 @media (prefers-reduced-motion:reduce){#lower,#mini,#nextchip{transition:none}}
 #shield{position:fixed;inset:0;z-index:2;background:transparent}
+
+.codebig{display:flex;flex-direction:column;gap:.2vw;margin-top:.4vw}
+.codebig span{font-size:1.8vw;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+.codebig b{font-family:var(--f-display);font-weight:700;color:var(--y);font-size:8.5vw;line-height:.95;letter-spacing:.14em}
+#mini .mcode{font-size:1.6vw;text-align:center}
+#mini .mcode b{display:block;font-family:var(--f-display);color:var(--y);font-size:3vw;letter-spacing:.14em;line-height:1}
+#break.over{background:transparent;display:block;padding:0;pointer-events:none}
+#break.over .fpanel{position:fixed;right:2.4vw;top:50%;transform:translateY(-50%);width:26vw;background:rgba(0,0,0,.86);border:2px solid var(--y);border-radius:1.6vw;padding:1.6vw;display:flex;flex-direction:column;align-items:center;text-align:center;gap:.8vw}
+#break.over .qrbox{width:100%;padding:1vw;border-radius:1.2vw}
+#break.over .t1{font-family:var(--f-display);font-weight:700;text-transform:uppercase;font-size:2.6vw;line-height:1}
+#break.over .codebig{align-items:center}
+#break.over .codebig b{font-size:6vw}
+#break.over .codebig span{font-size:1.2vw}
+#break.over .nx{border-top:2px solid var(--y);padding-top:.8vw;margin-top:.2vw;width:100%}
+#break.over .nx .lbl{font-size:1.2vw}
+#break.over .nx .nm{font-size:3vw}

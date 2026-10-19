@@ -51,6 +51,20 @@ const vid = s => s.hasVideo
   : `<button class="btn sm" data-a="pick-v" data-id="${s.id}">⚠ Sin video · elegir</button>`;
 
 const PSTATE = { playing: '▶ Reproduciendo', paused: '⏸ En pausa', buffering: '… Cargando', ended: 'Terminó', idle: 'Esperando' };
+function fillerBox() {
+  const f = V.filler;
+  if (f) return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)" class="stack">
+      <div class="row between wrapr"><span><span class="lbl" style="color:var(--muted)">Música de fondo</span><div style="font-weight:700">${esc(f.title || 'Video de YouTube')}</div></span>
+      <button class="btn sm danger" data-a="filler-stop">⏹ Quitar música</button></div>
+      <span class="muted" style="font-size:13px">La TV la reproduce con el QR y el código visibles. Se quita sola al empezar el siguiente cantante.</span>
+      ${playerBar({ id: 'filler', hasVideo: true })}</div>`;
+  return `<details style="margin-top:12px"><summary>🎵 Poner música mientras nadie canta</summary>
+      <div class="stack" style="margin-top:10px">
+        <a class="link" href="https://www.youtube.com/results?search_query=rock+en+espa%C3%B1ol" target="_blank" rel="noopener">Buscar en YouTube ↗</a>
+        <input class="in" id="f-url" inputmode="url" placeholder="Pega el link del video (sirven los mix largos)" autocomplete="off">
+        <button class="btn y" data-a="filler-set">▶ Reproducir en la TV</button>
+        <span class="muted" style="font-size:13px">El QR y el código siguen en pantalla para que la gente pida.</span></div></details>`;
+}
 function playerBar(cur) {
   if (!V.tvOnline) return `<div class="msg warn" style="margin-top:10px">La pantalla TV no está conectada. Ábrela con "📺 Abrir pantalla TV".</div>`;
   if (!cur.hasVideo || cur.videoError) return '';
@@ -91,7 +105,8 @@ function renderAll() {
         <div style="margin-top:8px">${vid(nx)}</div>${picking === nx.id ? picker(nx) : ''}
         <button class="btn y xl" style="margin-top:14px" data-a="start">▶ Que empiece ${esc(nx.name)}${nx.hasVideo && !nx.videoError ? '' : ' (sin video)'}</button>
         <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm" data-a="skip-next">⏭ No vino · saltar</button></div>`
-      : `<p class="muted" style="margin:8px 0">${V.open ? 'La cola está vacía. Cuando alguien pida, aparece aquí.' : 'Abre la noche para empezar.'}</p>`}`;
+      : `<p class="muted" style="margin:8px 0">${V.open ? 'La cola está vacía. Cuando alguien pida, aparece aquí.' : 'Abre la noche para empezar.'}</p>`}
+      ${V.open ? fillerBox() : ''}`;
   }
 
   let last = -1, rows = '';
@@ -156,6 +171,8 @@ async function onAction(a, b) {
     case 'rotate': return act('rotate_code', {}, 'Código nuevo. Quienes ya entraron siguen dentro');
     case 'start': picking = null; return act('start');
     case 'finish': return act('finish');
+    case 'filler-set': { await act('set_filler', { url: $('f-url').value }, 'Música en la TV'); $('f-url').value = ''; return; }
+    case 'filler-stop': return act('clear_filler', {}, 'Música quitada');
     case 'pl-play': return act('player', { cmd: 'play' });
     case 'pl-pause': return act('player', { cmd: 'pause' });
     case 'pl-restart': return act('player', { cmd: 'restart' });

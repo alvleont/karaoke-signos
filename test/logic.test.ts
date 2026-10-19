@@ -152,6 +152,23 @@ describe('votos', () => {
   });
 });
 
+describe('música de fondo', () => {
+  it('se pone sin cantante, la TV la ve y se quita al empezar el siguiente', () => {
+    L.setFiller(s, 'https://youtu.be/dQw4w9WgXcQ');
+    expect(L.tvView(s).filler?.vid).toBe('dQw4w9WgXcQ');
+    expect(L.tvView(s).code).toBe('ABCD');
+    const a = join('A', 1); req(a, 'a1');
+    L.start(s, now());
+    expect(s.filler).toBeNull();
+    expect(() => L.setFiller(s, 'https://youtu.be/dQw4w9WgXcQ')).toThrow(/cantando/);
+  });
+  it('un fin de video viejo no quita otra música', () => {
+    L.setFiller(s, 'https://youtu.be/dQw4w9WgXcQ');
+    expect(L.clearFiller(s, 'otro_video_')).toBe(false);
+    expect(L.clearFiller(s, 'dQw4w9WgXcQ')).toBe(true);
+  });
+});
+
 describe('utilidades', () => {
   it('extrae el ID de YouTube de varios formatos', () => {
     expect(L.ytId('https://youtu.be/dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ');
