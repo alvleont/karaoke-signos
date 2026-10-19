@@ -1,0 +1,27 @@
+body.tv{overflow:hidden;height:100vh;background:#000;cursor:none}
+body.tv.cursor{cursor:default}
+#player-wrap,#player-wrap iframe{position:fixed;inset:0;width:100vw;height:100vh;border:0}
+#novideo{position:fixed;inset:0;display:grid;place-items:center;text-align:center;background:radial-gradient(ellipse at 50% 40%,#1d1d1d,#000 70%);color:var(--muted)}
+#novideo .play{font-size:7vw;color:#fff}
+#novideo .vt{font-size:2.4vw;font-weight:700;color:var(--fg)}
+#lower{position:fixed;left:3vw;bottom:3vw;right:22vw;display:flex;align-items:stretch;max-width:72vw;z-index:5}
+#lower .who{background:var(--y);color:var(--y-ink);font-family:var(--f-display);font-weight:700;text-transform:uppercase;font-size:3.4vw;line-height:1;padding:1.1vw 1.8vw;display:flex;align-items:center;overflow-wrap:anywhere}
+#lower .what{background:rgba(0,0,0,.82);border:2px solid var(--y);border-left:0;padding:.8vw 1.6vw;font-size:1.6vw;font-weight:700;display:flex;flex-direction:column;justify-content:center;min-width:0}
+#lower .what small{color:var(--muted);font-weight:500}
+#mini{position:fixed;right:2.4vw;bottom:2.4vw;display:flex;flex-direction:column;align-items:center;gap:.4vw;font-size:1.2vw;color:#fff;font-weight:700;z-index:5;text-shadow:0 1px 4px #000}
+#mini .qrbox{width:11vw;padding:.5vw;border-radius:1vw}
+#break{position:fixed;inset:0;display:grid;grid-template-columns:auto 1fr;gap:4vw;align-items:center;padding:4vw;background:radial-gradient(ellipse at 80% 20%,#2a2410,#000 60%);z-index:8}
+#break .qrbox{width:min(40vw,82vh);aspect-ratio:1;padding:1.4vw;border-radius:2vw;display:grid;place-items:center}
+#break .side{display:flex;flex-direction:column;gap:1.2vw;min-width:0}
+#break .t1{font-family:var(--f-display);font-weight:700;text-transform:uppercase;font-size:4.6vw;line-height:1}
+#break .t2{font-size:2vw;color:var(--muted)}
+#break .t2 b{color:var(--y);letter-spacing:.18em;font-family:var(--f-display);font-size:3.6vw}
+#break .nx{border-top:3px solid var(--y);padding-top:1.4vw;margin-top:1vw}
+#break .nx .lbl{font-size:1.8vw}
+#break .nx .nm{font-family:var(--f-display);font-weight:700;text-transform:uppercase;font-size:5.6vw;line-height:1;color:var(--y);overflow-wrap:anywhere}
+#break .nx .sg{font-size:2.2vw;font-weight:700}
+#break .logo{width:9vw;height:9vw}
+#unlock{position:fixed;inset:0;z-index:20;border:0;background:rgba(0,0,0,.92);color:var(--fg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4vw;cursor:pointer}
+#unlock .t1{font-family:var(--f-display);font-size:4vw;text-transform:uppercase;color:var(--y)}
+#unlock .t2{font-size:1.6vw;color:var(--muted)}
+#noauth{position:fixed;inset:0;z-index:30;background:#000;display:grid;place-items:center;padding:24px;cursor:default}

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Karaoke Signos · Admin</title>
+<link rel="icon" href="/assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<main class="wrap wide">
+  <form id="login" class="card stack" style="max-width:400px;margin:40px auto;width:100%;gap:14px" novalidate hidden>
+    <div class="row"><img class="logo" src="/assets/logo.jpg" width="56" height="56" alt=""><h1 style="font-size:22px">Panel del karaoke</h1></div>
+    <label class="f">Usuario<input class="in" id="l-user" autocomplete="username" autocapitalize="none"></label>
+    <label class="f">Contraseña<input class="in" id="l-pass" type="password" autocomplete="current-password"></label>
+    <div id="l-err"></div>
+    <button class="btn y xl" type="submit">Entrar</button>
+  </form>
+
+  <div id="dash" class="stack" style="gap:14px" hidden>
+    <div class="row between wrapr">
+      <div class="row"><img class="logo" src="/assets/logo.jpg" width="40" height="40" alt=""><b style="font-family:var(--f-display);font-size:18px;text-transform:uppercase">Karaoke Signos</b></div>
+      <div class="row"><a class="btn sm" href="/tv" target="_blank" rel="noopener">📺 Abrir pantalla TV</a><button class="btn sm ghost" id="logout">Salir</button></div>
+    </div>
+    <div class="card" id="night"></div>
+    <div id="alerts" class="stack"></div>
+    <div class="card now" id="stage"></div>
+    <div class="card">
+      <h2 style="font-size:20px">Cola</h2>
+      <p class="muted" style="margin:4px 0;font-size:13px">Una canción por mesa en cada ronda. ▲ sube al primer lugar.</p>
+      <div class="list" id="queue"></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px">Mesas</h2>
+      <p class="muted" style="margin:4px 0 10px;font-size:13px">Amarillo = activa. Toca una libre para abrirla; toca una activa para agregar una canción o cerrarla.</p>
+      <div class="tchips" id="tables"></div>
+      <div id="panel"></div>
+    </div>
+    <details class="card"><summary>Historial de la noche</summary><div class="list" id="hist" style="margin-top:8px"></div></details>
+    <details class="card" id="settings-card"><summary>Ajustes</summary><div id="settings" style="margin-top:8px"></div></details>
+    <div id="wipe"></div>
+  </div>
+</main>
+<script src="/assets/qrcode.js"></script>
+<script type="module" src="/assets/admin.js"></script>
+</body>
+</html>

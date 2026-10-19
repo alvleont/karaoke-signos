@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "karaoke-signos",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "drop-trailing-slash",
+    "run_worker_first": ["/ws", "/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "ROOM", "class_name": "Room" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+  "routes": [{ "pattern": "karaokesignos.grupoleonia.com", "custom_domain": true }],
+  "observability": { "enabled": true }
+  // Secretos (no van aquí): ADMIN_USER, ADMIN_PASS_HASH, SESSION_SECRET
+}

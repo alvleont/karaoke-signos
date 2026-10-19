@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0b">
+<title>Karaoke Signos</title>
+<link rel="icon" href="/assets/icon-192.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<main class="wrap">
+  <!-- Entrada -->
+  <section id="join" class="stack" style="gap:14px" hidden>
+    <div class="stack" style="align-items:center;text-align:center;padding-top:8px">
+      <img class="logo" src="/assets/logo.jpg" width="120" height="120" alt="Signos Rock &amp; Band">
+      <h1 style="font-size:30px;margin-top:6px">¿Quién canta?</h1>
+    </div>
+    <div id="closed" class="msg warn" hidden>El karaoke todavía no ha abierto. Cuando abra, escanea el QR de la pantalla.</div>
+    <div id="kick" class="msg warn" hidden>Tu mesa se cerró. Si siguen aquí, vuelvan a entrar.</div>
+    <label class="f">Código de la noche<input class="in code num" id="j-code" maxlength="4" autocomplete="off" autocapitalize="characters"><span class="hint">Se llena solo al escanear el QR. Si no, míralo en la pantalla.</span></label>
+    <label class="f">1. Tu nombre<input class="in" id="j-name" maxlength="24" placeholder="Ej. Andrés" autocomplete="given-name"></label>
+    <div class="stack" style="gap:8px"><span style="font-weight:700">2. Tu mesa</span><div class="tgrid" id="j-tables"></div></div>
+    <button class="btn y xl" id="j-go">Entrar</button>
+  </section>
+
+  <!-- Inicio -->
+  <section id="home" class="stack" style="gap:14px" hidden>
+    <div class="row between" id="head"></div>
+    <div id="turn"></div>
+    <button class="btn y xl" id="open-sheet">🎤 Pedir canción</button>
+    <div id="now"></div>
+    <div id="mine"></div>
+    <div id="full"></div>
+    <details class="card"><summary>Canciones que ya sonaron</summary><div class="list" id="hist" style="margin-top:8px"></div></details>
+  </section>
+</main>
+
+<div id="sheet" class="sheet" hidden>
+  <form class="sheet-in" id="req" novalidate>
+    <div class="row between"><h2 style="font-size:22px">Pedir canción</h2><button type="button" class="btn ghost sm" id="close-sheet">Cerrar</button></div>
+    <label class="f">Canción<input class="in" id="r-title" maxlength="80" placeholder="Ej. Amor eterno" autocomplete="off"></label>
+    <label class="f">Artista<input class="in" id="r-artist" maxlength="60" placeholder="Ej. Rocío Dúrcal" autocomplete="off"></label>
+    <details id="r-det"><summary>¿Tienes el link de YouTube? (opcional)</summary>
+      <div class="stack" style="margin-top:10px"><input class="in" id="r-url" inputmode="url" maxlength="200" placeholder="https://youtu.be/…" autocomplete="off">
+      <a class="link" id="r-yt" href="https://www.youtube.com/results?search_query=karaoke" target="_blank" rel="noopener">Buscar la versión karaoke en YouTube ↗</a></div>
+    </details>
+    <div id="r-msg"></div>
+    <button class="btn y xl" type="submit" id="r-send">Enviar</button>
+  </form>
+</div>
+<script type="module" src="/assets/client.js"></script>
+</body>
+</html>

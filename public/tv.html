@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karaoke Signos · Pantalla</title>
+<link rel="icon" href="/assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/assets/app.css">
+<link rel="stylesheet" href="/assets/tv.css">
+</head>
+<body class="tv">
+  <div id="player-wrap"><div id="player"></div></div>
+  <div id="novideo" hidden><div><div class="play">⚠</div><div class="vt" id="nv-msg">Sin video</div></div></div>
+  <div id="lower" hidden></div>
+  <div id="mini" hidden></div>
+  <div id="break"></div>
+  <button id="unlock" type="button">
+    <img class="logo" src="/assets/logo.jpg" width="140" height="140" alt="">
+    <span class="t1">Toca para iniciar la pantalla</span>
+    <span class="t2">Activa el sonido y la pantalla completa</span>
+  </button>
+  <div id="noauth" hidden><div class="stack" style="align-items:center;text-align:center"><h1>Pantalla bloqueada</h1><p class="muted">Inicia sesión en <b>/admin</b> en este mismo computador y vuelve a abrir esta pantalla.</p><a class="btn y" href="/admin">Ir al panel</a></div></div>
+<script src="/assets/qrcode.js"></script>
+<script type="module" src="/assets/tv.js"></script>
+</body>
+</html>
