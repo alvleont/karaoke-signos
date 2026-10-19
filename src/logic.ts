@@ -226,6 +226,17 @@ export function start(s: State, now: number): Song {
   return n;
 }
 
+// La persona que sigue no está: su canción se marca como saltada y su mesa pierde el turno de esta ronda.
+export function skipNext(s: State, now: number): Song {
+  if (s.currentId) throw new UserError('Alguien está cantando. Usa "Saltar" sobre la canción actual.');
+  const q = queue(s);
+  if (!q.length) throw new UserError('La cola está vacía.');
+  const n = q[0].song;
+  n.status = 'skipped'; n.endedAt = now;
+  if (!n.priority) s.lastTable = n.table;
+  return n;
+}
+
 // ---------- Votos ----------
 export function stats(s: State, songId: string) {
   const v = Object.values(s.votes[songId] || {}).map(x => x.v);

@@ -26,6 +26,8 @@ export class Room extends DurableObject<Env> {
   s!: L.State;
   // Límite de mensajes por socket (se reinicia si el objeto hiberna; es una protección básica).
   rate = new WeakMap<WebSocket, { n: number; t: number }>();
+  // Estado del reproductor que reporta la TV (solo en memoria; no hace falta guardarlo).
+  player: { state: string; songId: string | null } = { state: 'idle', songId: null };
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -96,6 +98,7 @@ export class Room extends DurableObject<Env> {
     pair[1].serializeAttachment(att);
     pair[1].send(JSON.stringify({ t: 'hello', role: att.role, user: !!att.userId }));
     pair[1].send(this.viewFor(att));
+    if (att.role === 'tv') this.sendAdmins({ t: 'tv', online: true });
     return new Response(null, { status: 101, webSocket: pair[0] });
   }
 
@@ -157,6 +160,13 @@ export class Room extends DurableObject<Env> {
       switch (m.t) {
         case 'ended': changed = L.finish(s, false, now, String(m.id)); break;
         case 'video_error': L.markVideoError(s, String(m.id)); break;
+        case 'player_state': {
+          const st = String(m.state);
+          if (!['playing', 'paused', 'buffering', 'ended', 'idle'].includes(st)) throw new L.UserError('Estado inválido.');
+          this.player = { state: st, songId: m.id ? String(m.id) : null };
+          this.sendAdmins({ t: 'player', ...this.player });
+          return;
+        }
         default: throw new L.UserError('Acción no permitida.');
       }
     } else {
@@ -167,6 +177,7 @@ export class Room extends DurableObject<Env> {
         case 'start': L.start(s, now); break;
         case 'finish': L.finish(s, false, now); break;
         case 'skip': L.finish(s, true, now); break;
+        case 'skip_next': L.skipNext(s, now); break;
         case 'prio': L.prioritizeSong(s, String(m.id)); break;
         case 'reject': L.rejectSong(s, String(m.id)); break;
         case 'set_video': L.setVideo(s, String(m.id), m.url); fetchTitleFor = String(m.id); break;
@@ -175,6 +186,14 @@ export class Room extends DurableObject<Env> {
         case 'table_off': L.closeTable(s, Number(m.n)); break;
         case 'alert': result = { msg: L.resolveAlert(s, String(m.id), !!m.accept) }; break;
         case 'settings': L.updateSettings(s, m.settings || {}); break;
+        case 'player': {
+          const cmd = String(m.cmd);
+          if (!['play', 'pause', 'restart'].includes(cmd)) throw new L.UserError('Orden inválida.');
+          const tvs = this.ctx.getWebSockets('tv');
+          if (!tvs.length) throw new L.UserError('La pantalla TV no está conectada. Ábrela desde el botón "Abrir pantalla TV".');
+          for (const t of tvs) { try { t.send(JSON.stringify({ t: 'cmd', cmd })); } catch { /* cerrado */ } }
+          return;
+        }
         default: throw new L.UserError('Acción no permitida.');
       }
     }
@@ -183,7 +202,11 @@ export class Room extends DurableObject<Env> {
     return result;
   }
 
-  async webSocketClose(ws: WebSocket, code: number) { try { ws.close(code, 'bye'); } catch { /* ya cerrado */ } }
+  async webSocketClose(ws: WebSocket, code: number) {
+    try { ws.close(code, 'bye'); } catch { /* ya cerrado */ }
+    const att = ws.deserializeAttachment() as Att;
+    if (att?.role === 'tv') this.sendAdmins({ t: 'tv', online: this.ctx.getWebSockets('tv').some(w => w !== ws && w.readyState === 1) });
+  }
   async webSocketError() { /* el cliente reconecta solo */ }
 
   // Título del video vía oEmbed público de YouTube (sin clave).
@@ -198,15 +221,20 @@ export class Room extends DurableObject<Env> {
       const fresh = L.SG(this.s, songId);
       if (!fresh) return;
       if (!fresh.title && d.title) fresh.title = String(d.title).slice(0, L.LIMITS.title);
-      if (!fresh.artist && d.author_name) fresh.artist = String(d.author_name).slice(0, L.LIMITS.artist);
+      // author_name es el canal de YouTube, no el artista: no se usa.
       await this.save(); this.broadcast();
     } catch { /* sin título: se queda como "Video de YouTube" */ }
   }
 
   viewFor(att: Att): string {
-    if (att.role === 'admin') return JSON.stringify({ t: 'state', view: L.adminView(this.s) });
+    if (att.role === 'admin') return JSON.stringify({ t: 'state', view: { ...L.adminView(this.s), tvOnline: this.ctx.getWebSockets('tv').length > 0, player: this.player } });
     if (att.role === 'tv') return JSON.stringify({ t: 'state', view: L.tvView(this.s) });
     return JSON.stringify({ t: 'state', view: att.userId ? L.clientView(this.s, att.userId) : L.clientView(this.s, '') });
+  }
+
+  sendAdmins(msg: object) {
+    const txt = JSON.stringify(msg);
+    for (const ws of this.ctx.getWebSockets('admin')) { try { ws.send(txt); } catch { /* cerrado */ } }
   }
 
   broadcast() {

@@ -19,7 +19,7 @@ export function qrSVG(text) {
 }
 
 // Conexión WebSocket con reconexión automática. send() devuelve una promesa con la respuesta del servidor.
-export function connect(role, { getToken, onState, onKicked, onOpen, onAuthFail }) {
+export function connect(role, { getToken, onState, onKicked, onOpen, onAuthFail, onOther }) {
   let ws, refN = 0, retry = 0, ping, closedByUs = false;
   const waiting = new Map();
   const net = () => { let n = $('net'); if (!n) { n = document.createElement('div'); n.id = 'net'; n.textContent = 'Sin conexión. Reconectando…'; document.body.append(n); } return n; };
@@ -37,6 +37,7 @@ export function connect(role, { getToken, onState, onKicked, onOpen, onAuthFail 
       else if (m.t === 'kicked') onKicked && onKicked();
       else if (m.ref && waiting.has(m.ref)) { const w = waiting.get(m.ref); waiting.delete(m.ref); m.t === 'ok' ? w.ok(m) : w.fail(new Error(m.msg)); }
       else if (m.t === 'err') toast(m.msg, true);
+      else onOther && onOther(m);
     };
     ws.onclose = () => {
       clearInterval(ping);

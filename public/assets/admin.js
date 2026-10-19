@@ -10,6 +10,7 @@ async function boot() {
   $('login').hidden = true; $('dash').hidden = false;
   conn = connect('admin', {
     onState: v => { V = v; render(); },
+    onOther: m => { if (!V) return; if (m.t === 'player') { V.player = m; render(); } if (m.t === 'tv') { V.tvOnline = m.online; render(); } },
     onAuthFail: () => { conn?.close(); $('login').hidden = false; $('dash').hidden = true; },
   });
 }
@@ -49,6 +50,17 @@ const vid = s => s.hasVideo
   ? (s.videoError ? `<button class="btn sm danger" data-a="pick-v" data-id="${s.id}">⚠ Video bloqueado · cambiar</button>` : `<span class="pill good">🎬 Video listo</span>`)
   : `<button class="btn sm" data-a="pick-v" data-id="${s.id}">⚠ Sin video · elegir</button>`;
 
+const PSTATE = { playing: '▶ Reproduciendo', paused: '⏸ En pausa', buffering: '… Cargando', ended: 'Terminó', idle: 'Esperando' };
+function playerBar(cur) {
+  if (!V.tvOnline) return `<div class="msg warn" style="margin-top:10px">La pantalla TV no está conectada. Ábrela con "📺 Abrir pantalla TV".</div>`;
+  if (!cur.hasVideo || cur.videoError) return '';
+  const st = V.player && V.player.songId === cur.id ? V.player.state : 'idle';
+  return `<div class="row between wrapr" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+    <span class="muted" style="font-size:14px">TV: ${PSTATE[st] || st}</span>
+    <div class="row">${st === 'playing' || st === 'buffering'
+      ? '<button class="btn" data-a="pl-pause">⏸ Pausar</button>'
+      : '<button class="btn y" data-a="pl-play">▶ Reproducir</button>'}<button class="btn" data-a="pl-restart">↺ Desde el inicio</button></div></div>`;
+}
 function renderAll() {
   const q = V.queue, cur = V.current, nx = q[0];
 
@@ -71,12 +83,14 @@ function renderAll() {
       <div class="muted num" style="font-size:14px;margin-top:4px">🔒 ★ ${st.count ? st.avg.toFixed(1) : '–'} · ${st.count} ${st.count === 1 ? 'mesa votó' : 'mesas votaron'} (solo lo ves tú)</div>
       <button class="btn y xl" style="margin-top:14px" data-a="finish">✓ Terminó · mostrar QR</button>
       <div class="row between wrapr" style="margin-top:10px"><span class="muted" style="font-size:14px">Sigue: ${nx ? `<b style="color:var(--fg)">${esc(nx.name)}</b> · Mesa ${nx.table}` : 'nadie'}</span>
-      <button class="btn sm" data-a="skip">Saltar</button></div>`;
+      <button class="btn sm" data-a="skip">Saltar</button></div>
+      ${playerBar(cur)}`;
   } else {
     $('stage').innerHTML = `<div class="row between wrapr"><span class="lbl">Entre canciones</span><span class="muted" style="font-size:13px">La TV muestra el QR grande</span></div>
       ${nx ? `<div style="margin-top:6px" class="muted">Sigue</div><div class="row wrapr" style="align-items:baseline"><div class="big-name">${esc(nx.name)}</div><span class="mesa">Mesa ${nx.table}</span></div>${songHTML(nx)}
         <div style="margin-top:8px">${vid(nx)}</div>${picking === nx.id ? picker(nx) : ''}
-        <button class="btn y xl" style="margin-top:14px" data-a="start">▶ Que empiece ${esc(nx.name)}${nx.hasVideo && !nx.videoError ? '' : ' (sin video)'}</button>`
+        <button class="btn y xl" style="margin-top:14px" data-a="start">▶ Que empiece ${esc(nx.name)}${nx.hasVideo && !nx.videoError ? '' : ' (sin video)'}</button>
+        <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm" data-a="skip-next">⏭ No vino · saltar</button></div>`
       : `<p class="muted" style="margin:8px 0">${V.open ? 'La cola está vacía. Cuando alguien pida, aparece aquí.' : 'Abre la noche para empezar.'}</p>`}`;
   }
 
@@ -108,7 +122,7 @@ function renderAll() {
         : `<button class="btn danger" data-a="t-ask">La mesa se levantó…</button>`}</div></div>`;
   }
 
-  $('hist').innerHTML = V.history.map(s => `<div class="li"><span class="mesa off">${s.table}</span><div class="grow"><b>${esc(s.name)}</b>${songHTML(s)}</div>${s.status === 'skipped' ? '<span class="pill">Saltada</span>' : s.stats.count ? `<span class="pill num">★ ${s.stats.avg.toFixed(1)}</span>` : ''}</div>`).join('') || '<p class="muted">Aún nada.</p>';
+  $('hist').innerHTML = V.history.map(s => `<div class="li"><span class="mesa off">${s.table}</span><div class="grow"><b>${esc(s.name)}</b>${songHTML(s)}</div>${s.status === 'skipped' ? '<span class="pill">Saltada / no vino</span>' : s.stats.count ? `<span class="pill num">★ ${s.stats.avg.toFixed(1)}</span>` : ''}</div>`).join('') || '<p class="muted">Aún nada.</p>';
 
   if (!document.activeElement || !document.activeElement.closest('#settings')) {
     const st = V.settings;
@@ -142,7 +156,11 @@ async function onAction(a, b) {
     case 'rotate': return act('rotate_code', {}, 'Código nuevo. Quienes ya entraron siguen dentro');
     case 'start': picking = null; return act('start');
     case 'finish': return act('finish');
+    case 'pl-play': return act('player', { cmd: 'play' });
+    case 'pl-pause': return act('player', { cmd: 'pause' });
+    case 'pl-restart': return act('player', { cmd: 'restart' });
     case 'skip': return act('skip', {}, 'Canción saltada');
+    case 'skip-next': return act('skip_next', {}, 'Saltada. Su mesa pierde el turno de esta ronda');
     case 'prio': return act('prio', { id }, 'Subida al primer lugar');
     case 'reject': return act('reject', { id }, 'Canción quitada');
     case 'al-yes': return act('alert', { id, accept: true });

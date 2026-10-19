@@ -25,3 +25,10 @@ body.tv.cursor{cursor:default}
 #unlock .t1{font-family:var(--f-display);font-size:4vw;text-transform:uppercase;color:var(--y)}
 #unlock .t2{font-size:1.6vw;color:var(--muted)}
 #noauth{position:fixed;inset:0;z-index:30;background:#000;display:grid;place-items:center;padding:24px;cursor:default}
+#lower,#mini,#nextchip{opacity:0;transition:opacity .8s ease,transform .8s ease;pointer-events:none}
+#lower{transform:translateY(1vw)}
+#lower.show,#mini.show,#nextchip.show{opacity:1;transform:none}
+#nextchip{position:fixed;left:3vw;bottom:3vw;z-index:5;background:rgba(0,0,0,.82);border:2px solid var(--y);border-radius:1vw;padding:.8vw 1.4vw;font-size:1.8vw;font-weight:700}
+#nextchip span{font-family:var(--f-display);color:var(--y);text-transform:uppercase;margin-right:.6vw}
+@media (prefers-reduced-motion:reduce){#lower,#mini,#nextchip{transition:none}}
+#shield{position:fixed;inset:0;z-index:2;background:transparent}

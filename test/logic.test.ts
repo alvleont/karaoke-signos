@@ -58,6 +58,13 @@ describe('cola por rondas', () => {
     L.start(s, now());
     expect(() => L.start(s, now())).toThrow(/terminó/);
   });
+  it('saltar a quien no vino: su mesa pierde el turno y la rotación sigue', () => {
+    const a = join('A', 1), b = join('B', 2);
+    req(a, 'a1'); req(b, 'b1'); req(a, 'a2');
+    const sk = L.skipNext(s, now());
+    expect(sk.title).toBe('a1');
+    expect(L.queue(s).map(q => q.song.title)).toEqual(['b1', 'a2']);
+  });
   it('ignora un "terminó" viejo de la TV', () => {
     const a = join('A', 1); req(a, 'a1');
     L.start(s, now());
