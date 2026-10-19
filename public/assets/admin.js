@@ -81,7 +81,7 @@ function renderAll() {
   $('night').innerHTML = V.open
     ? `<div class="row between wrapr" style="gap:14px"><div class="stack" style="gap:6px;min-width:0"><h2 style="font-size:20px">Código de la noche</h2><span class="code-big num">${esc(V.code)}</span>
         <span class="muted" style="font-size:13px">Va en el QR de la TV. Cámbialo si sospechas que circula fuera del bar.</span>
-        <div class="row wrapr"><button class="btn sm" data-a="rotate">↻ Cambiar código</button><span class="muted" style="font-size:13px">${V.people} personas conectadas</span></div></div>
+        <div class="row wrapr"><button class="btn sm" data-a="rotate">↻ Cambiar código</button><button class="btn sm y" data-a="intro">🎬 Intro en la TV</button><button class="btn sm ghost" data-a="intro-stop">⏹ Detener intro</button><span class="muted" style="font-size:13px">${V.people} personas conectadas</span></div></div>
         <span class="qrbox" style="width:130px">${qrSVG(location.origin + '/?n=' + V.code)}</span></div>`
     : `<h2 style="font-size:20px;margin-bottom:6px">Karaoke cerrado</h2><p class="muted" style="margin:0 0 10px;font-size:14px">Al abrir la noche se genera un código y un QR nuevos.</p><button class="btn y xl" data-a="open">Abrir la noche</button>`;
 
@@ -173,6 +173,8 @@ async function onAction(a, b) {
     case 'finish': return act('finish');
     case 'filler-set': { await act('set_filler', { url: $('f-url').value }, 'Música en la TV'); $('f-url').value = ''; return; }
     case 'filler-stop': return act('clear_filler', {}, 'Música quitada');
+    case 'intro': return act('player', { cmd: 'intro' }, 'Intro en la TV');
+    case 'intro-stop': return act('player', { cmd: 'intro_stop' });
     case 'pl-play': return act('player', { cmd: 'play' });
     case 'pl-pause': return act('player', { cmd: 'pause' });
     case 'pl-restart': return act('player', { cmd: 'restart' });

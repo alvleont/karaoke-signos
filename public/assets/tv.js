@@ -61,7 +61,20 @@ function makePlayer() {
     },
   });
 }
+function playIntro() {
+  const v = $('intro');
+  try { player?.pauseVideo?.(); } catch {}
+  v.hidden = false; v.currentTime = 0;
+  v.play().catch(() => { v.hidden = true; });
+}
+function stopIntro() {
+  const v = $('intro'); v.pause(); v.hidden = true;
+  if (V?.current || V?.filler) { try { player.playVideo(); } catch {} }
+}
+$('intro').addEventListener('ended', stopIntro);
 function command(cmd) {
+  if (cmd === 'intro') return playIntro();
+  if (cmd === 'intro_stop') return stopIntro();
   if (!playerReady) return;
   try {
     if (cmd === 'play') player.playVideo();

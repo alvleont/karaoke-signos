@@ -191,7 +191,7 @@ export class Room extends DurableObject<Env> {
         case 'settings': L.updateSettings(s, m.settings || {}); break;
         case 'player': {
           const cmd = String(m.cmd);
-          if (!['play', 'pause', 'restart'].includes(cmd)) throw new L.UserError('Orden inválida.');
+          if (!['play', 'pause', 'restart', 'intro', 'intro_stop'].includes(cmd)) throw new L.UserError('Orden inválida.');
           const tvs = this.ctx.getWebSockets('tv');
           if (!tvs.length) throw new L.UserError('La pantalla TV no está conectada. Ábrela desde el botón "Abrir pantalla TV".');
           for (const t of tvs) { try { t.send(JSON.stringify({ t: 'cmd', cmd })); } catch { /* cerrado */ } }

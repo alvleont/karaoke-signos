@@ -57,12 +57,12 @@ node test/e2e.mjs    # prueba de punta a punta contra `npm run dev` (usa la clav
 
 1. En el computador del bar, entra a `/admin` e inicia sesión.
 2. Pulsa **Abrir la noche** y luego **Abrir pantalla TV**. Lleva esa ventana al televisor y haz clic en "Toca para iniciar la pantalla" (activa sonido y pantalla completa).
-3. La gente escanea el QR. Entre canciones la TV muestra el QR grande.
-4. Para cada canción: **▶ Que empiece…** → la TV reproduce el video. Al terminar el video la TV vuelve sola al QR; si no hay video, pulsa **✓ Terminó**.
-5. Si una canción no tiene video o YouTube no permite reproducirlo, usa **Elegir video** y pega el link.
-6. Al final: **Cerrar la noche y limpiar el bar**.
+3. Opcional: **🎬 Intro en la TV** reproduce el video de bienvenida (40 s) con la voz en off.
+4. La gente escanea el QR. Entre canciones la TV muestra el QR grande.
+5. Para cada canción: **▶ Que empiece…** → la TV reproduce el video. Al terminar el video la TV vuelve sola al QR; si no hay video, pulsa **✓ Terminó**.
+6. Si una canción no tiene video o YouTube no permite reproducirlo, usa **Elegir video** y pega el link.
+7. Al final: **Cerrar la noche y limpiar el bar**.
 
 ## Pendiente (mejoras)
 
-- Video intro con la voz en off sincronizada.
 - Búsqueda de YouTube dentro del panel (requiere clave gratuita de la API; ~100 búsquedas/día).
